@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Compile</title>
+  </head>
+  <style>
+    body,html{
+      margin: 0px;
+      height: 100%;
+    }
+
+    div {
+      height: 70%;
+    }
+    #txtEditor{
+      width: 60%;
+      height: 90%;
+      padding: 1px;
+      margin: 1px;
+      border: solid 1px;
+      font-size: 18px;
+    }
+    #txtCompile{
+      width: 37%;
+      height: 90%;
+      padding: 1px;
+      margin: 1px;
+      border: solid 1px;
+      font-size: 18px;
+    }
+    #txtConsole{
+      width: 98%;
+      height: 29.535%;
+      padding: 1px;
+      margin: 1px;
+      border: solid 1px;
+      font-size: 12px;
+    }
+    span {
+      width: 100%;
+      height: 10%;
+      background-color: lightblue;
+    }
+  </style>
+  <body>
+    <div>
+        <textarea id="txtEditor"></textarea>
+        <textarea id="txtCompile" readonly></textarea>
+        <span>控制台</span>
+    </div>
+    
+    <textarea id="txtConsole" readonly></textarea>
+    <script>
+      require('./index.js');
+    </script>
+  </body>
+</html>
