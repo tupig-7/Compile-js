@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Compile</title>
+</head>
+<style>
+    body,
+    html {
+        margin: 0px;
+        height: 99.535%;
+    }
+    
+    .container {
+        margin-top: 5px;
+        height: 99.535%;
+        width: 100%;
+    }
+    
+    .above {
+        height: 4%;
+        width: 96%;
+        margin: 1px auto;
+        border: 1px solid;
+    }
+    
+    .below {
+        height: 94%;
+        width: 96%;
+        margin: 1px auto;
+    }
+    
+    .left {
+        background: lightgrey;
+        width: 32%;
+        height: 590px;
+        float: left;
+        margin: 0 1%
+    }
+    
+    .middle {
+        background: lightblue;
+        width: 32%;
+        height: 590px;
+        margin: 0 auto;
+        float: left
+    }
+    
+    .right {
+        background: lightgrey;
+        width: 32%;
+        height: 590px;
+        float: left;
+        margin: 0 1%
+    }
+    
+    .top {
+        height: 72%;
+    }
+    
+    .foot {
+        height: 28%;
+    }
+    
+    table {
+        width: 100%;
+        margin: 0 auto;
+        text-align: center;
+        border: 1px solid;
+    }
+    
+    button {
+        width: 100px;
+        border-radius: 2px;
+        margin: 0 10px 10px 10px;
+        background-color: antiquewhite;
+    }
+</style>
+
+<body>
+    <div class="container">
+        <div class="above">
+            <span class="title">请输入一个正规式</span>
+            <input type="text">
+            <span>例如: (a*|b)*</span>
+            <button>验证正规式</button>
+            <button>退出</button>
+        </div>
+        <div class="below">
+            <div class="left">
+                <span class="title">正规式->NFA</span>
+                <div class="top">
+                    <table>
+                        <tr>
+                            <th>起始状态</th>
+                            <th>接受符号</th>
+                            <th>到达状态</th>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>3</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="foot">
+                    开始状态集: <span id="NFA-start"></span><br> 终结状态集: <span id="NFA-end"></span><br>
+                    <button>读入NFA文件</button>
+                    <button>生成NFA</button>
+                    <button>保存</button>
+                </div>
+
+            </div>
+            <div class="middle">
+                <span class="title">NFA->DFA</span>
+                <div class="top">
+                    <table>
+                        <tr>
+                            <th>起始状态</th>
+                            <th>接受符号</th>
+                            <th>到达状态</th>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>3</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="foot">
+                    开始状态集: <span id="DFA-start"></span><br> 终结状态集: <span id="DFA-end"></span><br>
+                    <button>读入DFA文件</button>
+                    <button>生成DFA</button>
+                    <button>保存</button>
+                </div>
+            </div>
+            <div class="right">
+                <span class="title">DFA->MFA</span>
+                <div class="top">
+                    <table>
+                        <tr>
+                            <th>起始状态</th>
+                            <th>接受符号</th>
+                            <th>到达状态</th>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>3</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="foot">
+                    开始状态集: <span id="MFA-start"></span><br> 终结状态集: <span id="MFA-end"></span><br>
+                    <button>生成MFA</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            require('./regular.js');
+        </script>
+</body>
+
+</html>

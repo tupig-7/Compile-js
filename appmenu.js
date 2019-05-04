@@ -1,14 +1,12 @@
 const { app } = require('electron');
 
-export var appMenuTemplate = [
-    {
+export var appMenuTemplate = [{
         label: 'File',
         submenu: []
     },
     {
         label: 'Edit',
-        submenu: [
-            {
+        submenu: [{
                 role: 'undo'
             },
             {
@@ -38,13 +36,24 @@ export var appMenuTemplate = [
         ]
     },
     {
-        label: 'Run',
+        label: '词法分析(W)',
+        submenu: []
+    },
+    {
+        label: '语法分析(P)',
+        submenu: []
+    },
+    {
+        label: '中间代码(M)',
+        submenu: []
+    },
+    {
+        label: '目标代码生成(O)',
         submenu: []
     },
     {
         label: 'View',
-        submenu: [
-            {
+        submenu: [{
                 role: 'reload'
             },
             {
@@ -75,11 +84,9 @@ export var appMenuTemplate = [
     },
     {
         role: 'help',
-        submenu: [
-            {
-                label: 'Home Page',
-                click() { require('electron').shell.openExternal('http://www.jianshu.com/u/a7454e40399d'); }
-            }
-        ]
+        submenu: [{
+            label: 'Home Page',
+            click() { require('electron').shell.openExternal('http://www.zhuzhujiang.xin/blog'); }
+        }]
     }
 ];
