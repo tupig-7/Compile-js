@@ -7,3 +7,5 @@ Lexical analyzer written in JS
 见regular.js
 
 ![Image text](https://github.com/zdd520/Compile-js/blob/everythone/img/%E9%A6%96%E9%A1%B5.PNG)
+![Image text](https://github.com/zdd520/Compile-js/blob/everythone/img/NFA-DFA-MFA.PNG)
+
