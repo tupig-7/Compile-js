@@ -4,12 +4,32 @@
 <head>
     <meta charset="utf-8">
     <title>Compile</title>
+    <script src="./jquery-3.3.1.min.js"></script>
+    <script src='./FileSaver.min.js'></script>
+    <script src="./regular.js"></script>
 </head>
 <style>
     body,
     html {
         margin: 0px;
         height: 99.535%;
+    }
+    
+    .left,
+    .middle,
+    .right {
+        background: #86c7ff;
+        color: #5f84a8;
+        border-radius: 5px;
+        box-shadow: 5px 5px 10px gray;
+        background: -webkit-linear-gradient(left, #d7edff, #a7d6ff);
+        /* Safari 5.1 - 6.0 */
+        background: -o-linear-gradient(right, #d7edff, #a7d6ff);
+        /* Opera 11.1 - 12.0 */
+        background: -moz-linear-gradient(right, #d7edff, #a7d6ff);
+        /* Firefox 3.6 - 15 */
+        background: linear-gradient(to right, #d7edff, #a7d6ff);
+        /* 标准的语法（必须放在最后） */
     }
     
     .container {
@@ -23,10 +43,23 @@
         width: 96%;
         margin: 1px auto;
         border: 1px solid;
+        font-size: 18px;
+        color: #5f84a8;
+        background: #86c7ff;
+        color: #5f84a8;
+        border-radius: 5px;
+        box-shadow: 5px 5px 10px gray;
+        background: -webkit-linear-gradient(left, #d7edff, #a7d6ff);
+        /* Safari 5.1 - 6.0 */
+        background: -o-linear-gradient(right, #d7edff, #a7d6ff);
+        /* Opera 11.1 - 12.0 */
+        background: -moz-linear-gradient(right, #d7edff, #a7d6ff);
+        /* Firefox 3.6 - 15 */
+        background: linear-gradient(to right, #d7edff, #a7d6ff);
     }
     
     .below {
-        height: 94%;
+        height: 93%;
         width: 96%;
         margin: 1px auto;
     }
@@ -34,7 +67,7 @@
     .left {
         background: lightgrey;
         width: 32%;
-        height: 590px;
+        height: 580px;
         float: left;
         margin: 0 1%
     }
@@ -42,7 +75,7 @@
     .middle {
         background: lightblue;
         width: 32%;
-        height: 590px;
+        height: 580px;
         margin: 0 auto;
         float: left
     }
@@ -50,13 +83,14 @@
     .right {
         background: lightgrey;
         width: 32%;
-        height: 590px;
+        height: 580px;
         float: left;
         margin: 0 1%
     }
     
     .top {
         height: 72%;
+        overflow: auto;
     }
     
     .foot {
@@ -76,92 +110,128 @@
         margin: 0 10px 10px 10px;
         background-color: antiquewhite;
     }
+    /*文件选择*/
+    
+    .upload {
+        padding: 4px 10px;
+        height: 20px;
+        line-height: 20px;
+        position: relative;
+        text-decoration: none;
+        color: #4d90d3;
+        cursor: pointer;
+    }
+    
+    .replyFileid {
+        width: 100%;
+        position: absolute;
+        overflow: hidden;
+        right: 0;
+        top: 0;
+        filter: alpha(opacity=0);
+        -moz-opacity: 0;
+        -khtml-opacity: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+    
+    .upload span {
+        color: #999;
+        cursor: pointer;
+    }
 </style>
 
 <body>
     <div class="container">
         <div class="above">
             <span class="title">请输入一个正规式</span>
-            <input type="text">
+            <input type="text" id="regular">
             <span>例如: (a*|b)*</span>
-            <button>验证正规式</button>
-            <button>退出</button>
+            <button onclick="checkTrue()">验证正规式</button>
         </div>
         <div class="below">
             <div class="left">
                 <span class="title">正规式->NFA</span>
-                <div class="top">
-                    <table>
+                <table>
+                    <thead>
                         <tr>
                             <th>起始状态</th>
                             <th>接受符号</th>
                             <th>到达状态</th>
                         </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>2</td>
-                            <td>3</td>
-                        </tr>
+                    </thead>
+                </table>
+                <div class="top">
+
+                    <table id="NFA">
+
+
                     </table>
                 </div>
                 <div class="foot">
                     开始状态集: <span id="NFA-start"></span><br> 终结状态集: <span id="NFA-end"></span><br>
-                    <button>读入NFA文件</button>
-                    <button>生成NFA</button>
-                    <button>保存</button>
+                    <div class="button-group">
+                        <a href="javascript:void(0);" class="upload upload1">选择NFA文件 > <span id="filename1">未选择任何文件</span>
+                            <input class="replyFileid" id="file1" name="file1" type="file" accept="text/plain" multiple="multiple" onchange="getfilename(this,1);" />
+                        </a>
+                    </div>
+                    <button onclick="NFA()">生成NFA</button>
+                    <button onclick="saveText(1)">保存</button>
                 </div>
 
             </div>
             <div class="middle">
                 <span class="title">NFA->DFA</span>
-                <div class="top">
-                    <table>
+                <table>
+                    <thead>
                         <tr>
                             <th>起始状态</th>
                             <th>接受符号</th>
                             <th>到达状态</th>
                         </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>2</td>
-                            <td>3</td>
-                        </tr>
+                    </thead>
+                </table>
+                <div class="top">
+                    <table id="DFA">
+
                     </table>
                 </div>
 
                 <div class="foot">
                     开始状态集: <span id="DFA-start"></span><br> 终结状态集: <span id="DFA-end"></span><br>
-                    <button>读入DFA文件</button>
-                    <button>生成DFA</button>
-                    <button>保存</button>
+                    <div class="button-group">
+                        <a href="javascript:void(0);" class="upload upload2">选择DFA文件 > <span id="filename2">未选择任何文件</span>
+                            <input class="replyFileid" id="file2" name="file2" type="file" accept="text/plain" multiple="multiple" onchange="getfilename(this,2);" />
+                        </a>
+                    </div>
+                    <button onclick="DFA()">生成DFA</button>
+                    <button onclick="saveText(2)">保存</button>
                 </div>
             </div>
             <div class="right">
                 <span class="title">DFA->MFA</span>
-                <div class="top">
-                    <table>
+                <table>
+                    <thead>
                         <tr>
                             <th>起始状态</th>
                             <th>接受符号</th>
                             <th>到达状态</th>
                         </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>2</td>
-                            <td>3</td>
-                        </tr>
+                    </thead>
+                </table>
+
+                <div class="top">
+                    <table id="MFA">
+
                     </table>
                 </div>
                 <div class="foot">
                     开始状态集: <span id="MFA-start"></span><br> 终结状态集: <span id="MFA-end"></span><br>
-                    <button>生成MFA</button>
+                    <button onclick="MFA()">生成MFA</button>
                 </div>
             </div>
         </div>
 
-        <script>
-            require('./regular.js');
-        </script>
 </body>
 
 </html>

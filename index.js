@@ -9,6 +9,8 @@ let isSaved = true; //当前文档是否已保存
 let txtEditor = document.getElementById('txtEditor'); //获得TextArea文本框的引用
 let txtCompile = document.getElementById('txtCompile'); //获得TxtCompile文本框的引用
 let txtConsole = document.getElementById("txtConsole"); //获得txtConsole文本框的引用
+let text1 = "";
+let text2 = "";
 //关键字 
 let key = ["auto", "break", "case", "char", "const", "continue",
     "default", "do", "double", "else", "enum", "extern",
@@ -80,7 +82,7 @@ ipcRenderer.on('action', (event, arg) => {
                 currentFile = files[0];
                 const txtRead = readText(currentFile);
                 txtEditor.value = txtRead;
-                txtCompile.value = "编译结果-----------\n";
+                txtCompile.value = "";
                 txtConsole.value = "";
                 document.title = "Compile - " + currentFile;
                 isSaved = true;
@@ -94,20 +96,24 @@ ipcRenderer.on('action', (event, arg) => {
             ipcRenderer.sendSync('reqaction', 'exit');
             break;
         case 'compile': //编译文件
-            txtConsole.value = "";
+            text2 = "Exit 0;";
+            text1 = "编译结果-----------\n";
             txtCompile.value = "";
+
             askSaveIfNeed();
             analysis();
             getWord();
             if (!error) {
-                txtConsole.value = "Exit 0;";
+
+                txtConsole.value = text2;
+                txtCompile.value = text1;
             }
+
             break;
         case 'regular': //开始正规化
-            regularWindow = new BrowserWindow({ width: 800, height: 700 })
+            regularWindow = new BrowserWindow({ width: 800, height: 700, autoHideMenuBar: true })
 
             regularWindow.loadURL(`file://${__dirname}/regular.html`);
-
             regularWindow.on("close", function() {
                 regularWindow = null;
 
@@ -167,6 +173,7 @@ function analysis() {
     if (response == 0) saveCurrentDoc(); //点击Yes按钮后保存当前文档
 
     let txt = txtEditor.value;
+    length = 0;
     for (let i = 0; i < txt.length; i++) {
 
         letter[length] = txt[i];
@@ -277,11 +284,11 @@ function NumberLink(s, n) {
 }
 
 function print(s, n) {
-    txtCompile.value += "(" + s + "," + n + ")" + "\n";
+    text1 += "(" + s + "," + n + ")" + "\n";
 }
 
 function consoleError(s, index) {
-    txtConsole.value += "Error " + index + " : (" + s + ")" + "\n";
+    text2 += "Error " + index + " : (" + s + ")" + "\n";
 }
 
 function getWord() { //取单词 

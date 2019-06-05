@@ -32,11 +32,11 @@ function getfilename(el, k) {
 
                         //将第一列和第三列变为数字
                         for (var i = 0; i < s.length; i += 3) {
+                            console.log(s[i + 2])
                             s[i] = (Number)(s[i]);
                             s[i + 2] = (Number)(s[i + 2]);
                         }
                         addTable(s, 2);
-                        getDFAEnd(s);
                         document.getElementById("filename2").innerHTML = _name;
                     }
                 }
@@ -278,21 +278,11 @@ function NFA() {
                 exp.push(regular[i]);
                 exp.push('+');
 
-            } else if (isLetter(regular[i - 1]) && regular[i] == '(') {
-                //当出现字符连着左括号
-                exp.push(regular[i]);
-                exp.push('+');
-
-            } else if (regular[i] == '*' && regular[i + 1] == '(') {
-                //当出现星号连着左括号
-                exp.push(regular[i]);
-                exp.push('+');
-
             } else {
                 exp.push(regular[i]);
             }
         }
-        //console.log(exp)
+        console.log(exp)
         exp = dal2Rpn(exp); //获得正规式的后缀表达式
         //console.log(exp);
         for (var i = 0; i < exp.length; i++) {
@@ -305,11 +295,9 @@ function NFA() {
                 num += 3;
                 k += 2;
             } else if (exp[i] == '+') { //如果是+运算符
-                var temp = end.shift(); //保存栈顶元素
-                NFA[num] = end.shift(); //出前面第二个节点的到达状态作为开始状态
+                NFA[num] = end.pop(); //出最后一个元素，前面第二个节点的抵达状态
                 NFA[num + 1] = '#';
-                NFA[num + 2] = start.pop(); //前面一个节点的开始状态出栈
-                end.unshift(temp); //原栈顶元素入队列
+                NFA[num + 2] = start.pop(); //出栈，前面第一个节点的开始状态
                 num += 3;
             } else if (exp[i] == '|') {
                 /*
@@ -377,54 +365,11 @@ function NFA() {
                 k++;
                 num += 3;
             }
-            //console.log(start);
-            //console.log(end);
+            console.log(start);
+            console.log(end);
         }
     }
     addTable(NFA, 1);
-
-}
-
-
-/**
- * 获得NFA的开始状态集和结束状态集
- */
-function getNFAStartEnd(arr) {
-    var i;
-    //创建图实例
-    var max1 = getMax(arr, 0);
-    var max2 = getMax(arr, 2);
-    var len = Math.max(max1, max2);
-    var graph = new Graph(len, arr.length / 3);
-
-    for (i = 0; i < arr.length; i += 3) {
-        graph.addEdge(arr[i], arr[i + 2], arr[i + 1]);
-    }
-
-    var s = [];
-    var e = [];
-
-    //不考虑起始点
-    for (i = 1; i <= len; i++) {
-        graph.set.clear();
-        graph.dfs(i);
-        graph.marked = [];
-        if (graph.set.size == len) { //如果一个节点能到达所有节点，则是开始
-            s.push(i);
-        }
-        if (graph.set.size == 1) { //如果一个节点只能到达本身，则是终止点
-            e.push(i);
-        }
-    }
-    document.getElementById("NFA-start").innerHTML = "";
-    document.getElementById("NFA-end").innerHTML = "";
-    for (i = 0; i < s.length; i++) {
-        document.getElementById("NFA-start").innerHTML += (s[i]);
-    }
-
-    for (i = 0; i < e.length; i++) {
-        document.getElementById("NFA-end").innerHTML += (e[i]);
-    }
 
 }
 
@@ -454,7 +399,8 @@ function addTable(arr, k) {
             table.innerHTML += cell; //单元格内的内容
         }
         //console.log(arr)
-        getNFAStartEnd(arr);
+        document.getElementById("NFA-start").innerHTML = getMax(arr, 0);
+        document.getElementById("NFA-end").innerHTML = getMax(arr, 2);
     } else if (k == 2) {
         var table = document.getElementById("DFA");
         table.innerHTML = ""; 
@@ -466,6 +412,8 @@ function addTable(arr, k) {
         }
         //console.log(arr)
         document.getElementById("DFA-start").innerHTML = 0;
+        document.getElementById("DFA-end").innerHTML = "";
+        getDFAEnd(arr);
     } else if (k == 3) {
         var table = document.getElementById("MFA");
         table.innerHTML = ""; 
@@ -491,144 +439,94 @@ function DFA() {
     var num = 0; //统计DFA条数
     var table = document.getElementById("NFA");
     var arr = table.getElementsByTagName("td");
-    var len = 0;
-    var w = new Set(); //定义权值集合
-    var p = new Set(); //定义所有节点集合
-    var startPoint = (Number)(document.getElementById("NFA-start").innerText); //开始节点
-    var endPoint = (Number)(document.getElementById("NFA-end").innerText); //终止节点
-    var endSet = new Set(); //终结状态集
-    for (i = 0; i < arr.length; i += 3) {
-        var temp = (Number)(arr[i].innerText);
-        len = len > temp ? len : temp;
-        temp = (Number)(arr[i + 2].innerText);
-        len = len > temp ? len : temp;
-    }
+    var max1 = (Number)(document.getElementById("NFA-start").innerHTML);
+    var max2 = (Number)(document.getElementById("NFA-end").innerHTML);
+    var len = Math.max(max1, max2);
     //创建图实例
-
     var graph = new Graph(len, arr.length / 3);
     for (i = 0; i < arr.length; i += 3) {
         if (arr[i + 1].innerText != '#') { //如果不是空加入队列
-            w.add(arr[i + 1].innerText);
+            DFA.push(arr[i]);
+            DFA.push(arr[i + 1].innerText);
+            DFA.push(arr[i + 2]);
             num++;
         }
-        p.add((Number)(arr[i].innerText));
-        p.add((Number)(arr[i + 2].innerText));
         graph.addEdge(arr[i].innerText, arr[i + 2].innerText, arr[i + 1].innerText);
     }
-
-    /*得到起始节点的经过#边能到达的点的集合 */
-    graph.bfs(startPoint);
-    var s0 = new Set();
-    s0.add(startPoint); //加入起始节点
-    for (let p1 of p) {
-        var ws = new Set("#");
-        var path = graph.pathTo(p1, startPoint); //获得路径
-        var weight = graph.getWeight(path); //获得路径的权值集合
-        iSet = intersectSet(weight, ws); //权值的交集
-        if (iSet.size == weight.size && iSet.size == ws.size) { //如果两个集合相等，加入节点
-            s0.add(p1);
+    for (i = 1; i <= len; i++) {
+        graph.set = new Set();
+        graph.dfs(i);
+        graph.marked = [];
+        if (graph.set.size == len) { //如果哪一个能够到达所有的节点，则设该节点为开始节点。
+            break;
         }
     }
-    /*  graph.marked = new Array();
-     graph.paths = [];
-     graph.stack = [];
-     graph.getAllRoute(1, 1);
-     console.log(graph.paths) */
-    var s = new Set(); // 定义一个集合用来存储子集
-    var iSet; //权值的交集
-    var sflag = [false]; //用来标记子集是否被标记
-    var st; //记录s集合初始大小
-    s.add(s0);
-    i = 0;
-    do {
-        st = s.size;
-        i = 0;
-        for (let ss of s) { //遍历集合中的子集
-            var ws = new Set(); //用来判断集合是否相等
-            if (!sflag[i]) {
-                for (let w1 of w) {
-                    var s1 = new Set();
-                    ws.add(w1);
-                    ws.add("#");
-                    for (let sss of ss) { //遍历子集中的元素
-                        graph.edgeTo = [];
-                        graph.set = new Set();
-                        graph.marked = [];
-                        graph.bfs(sss);
-                        for (let j of graph.set) {
-                            if (graph.set.has(sss) && sss != j) {
-                                graph.marked = new Array();
-                                graph.paths = [];
-                                graph.stack = [];
-                                graph.getAllRoute(sss, j);
-                                for (var jj = 0; jj < graph.paths.length; jj++) {
-                                    var path = graph.paths[jj]; //获得路径
-                                    var weight = graph.getWeight(path.reverse()); //获得路径的权值集合
-                                    iSet = intersectSet(weight, ws); //权值的交集
-                                    if (iSet.size == weight.size && iSet.size == ws.size) { //如果两个集合相等，加入节点
-                                        s1.add(j);
-                                    }
-                                }
-                            } else if (graph.set.has(sss) && sss == j) { //如果节点到本身，则求节点下一个节点到本节点的所有路径，再加入本节点
-                                for (var a = 0; a < graph.adj[j].length; a++) {
-                                    var start = (Number)(graph.adj[j][a]);
-                                    graph.marked = new Array();
-                                    graph.paths = [];
-                                    graph.stack = [];
-                                    graph.getAllRoute(start, j);
-                                    for (var jj = 0; jj < graph.paths.length; jj++) {
-                                        graph.paths[jj].unshift(j); //加入原出发节点
-                                        var path = graph.paths[jj]; //获得路径
-                                        var weight = graph.getWeight(path.reverse()); //获得路径的权值集合
-                                        iSet = intersectSet(weight, ws); //权值的交集
-                                        if (iSet.size == weight.size && iSet.size == ws.size) { //如果两个集合相等，加入节点
-                                            s1.add(j);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    ws.clear();
-                    var flag = true; //用来判断子集是否被标记
-                    var k = 0; //用来标记是第几个子集
-                    for (let s2 of s) {
-                        iSet = intersectSet(s1, s2); //权值的交集
-                        if (iSet.size == s1.size && iSet.size == s2.size) { //如果两个集合相等，说明该集合已经被标记
-                            DFA.push(i);
-                            DFA.push(w1);
-                            DFA.push(k);
-                            flag = false;
-                            break;
-                        }
-                        k++;
-                    }
-                    if (flag && s1.size != 0) {
-                        DFA.push(i);
-                        DFA.push(w1);
-                        DFA.push(s.size);
-                        s.add(s1);
-                        sflag.push(false);
-                    }
-                }
-                sflag[i] = true; //标记子集
+    graph.bfs(i);
+    var s = [];
+    for (var k = 0; k < num; k++) {
+        s[k] = [];
+        var v = DFA[k * 3 + 2].innerText;
+        var paths = graph.pathTo(v, i);
+        //console.log(paths)
+        var start = paths.pop();
+        s[k].push(0); //开始状态都是0
+        var end;
+        while (paths.length > 0) {
+            end = (Number)(paths.pop());
+            if (graph.weight[start][end] != '#') {
+                s[k].push(end);
             }
-            i++;
+            start = end;
         }
-    } while (st != s.size); //如果所有子集都被标记，结束循环
-
-    i = 0;
-    //确定终结状态集,存在NFA中终结态的集合为终结状态
-    for (let ss of s) {
-        console.log(ss)
-        if (ss.has(endPoint)) {
-            endSet.add(i);
-        }
-        i++;
     }
-    document.getElementById("DFA-end").innerHTML = "";
-    for (let end of endSet) {
-        document.getElementById("DFA-end").innerHTML += end + ";";
+    //对s数组进行长度的排序
+    var temp1 = new Array();
+    for (i = 0; i < num - 1; i++) {
+        for (var j = 0; j < num - 1 - i; j++) {
+            if (s[j].length > s[j + 1].length) {
+                temp1 = s[j];
+                s[j] = s[j + 1];
+                s[j + 1] = temp1;
+
+                var temp2 = DFA[j * 3 + 1];
+                DFA[j * 3 + 1] = DFA[j * 3 + 4];
+                DFA[j * 3 + 4] = temp2;
+            }
+        }
+    }
+
+    var start = 0; //开始态为0
+    var end = 0; //到达态从0开始
+    //第一个是确定的
+    DFA[start * 3] = start;
+    DFA[start * 3 + 2] = start + s[0].length - 1;
+    for (i = 1; i < num; i++) {
+        /**
+         * 如果这条路径和前一条路径一样长，
+         * 则该路径的开始状态和前一个路径的开始状态相同，
+         * 到达状态=前一路径的到达状态+该路径的长度 - 1。
+         */
+        if (s[i].length == s[i - 1].length) {
+            DFA[i * 3] = start;
+            DFA[i * 3 + 2] = DFA[i * 3 - 1] + s[i].length - 1;
+            end = DFA[i * 3 + 2];
+        } else {
+            /**
+             * 如果这条路径的长度与前一路径的长度不一样长，
+             * 判断该路径是否包含之前的路径，
+             * 若包含，开始状态为包含路径的到达状态
+             * 到达状态=总的到达状态+该路径的长度 - 包含路径的长度。
+             */
+            for (var j = i - 1; j >= 0; j--) {
+
+                if (isContained(s[i], s[j])) {
+
+                    DFA[i * 3] = DFA[j * 3 + 2];
+                    DFA[i * 3 + 2] = end + s[i].length - s[j].length;
+                    break;
+                }
+            }
+        }
     }
     addTable(DFA, 2);
 }
@@ -648,41 +546,27 @@ function getDFAEnd(arr) {
         /**
          * 在这里我们注意，将所有节点+1，因为图的构造从1开始
          */
-        graph.addEdge(arr[i], arr[i + 2], arr[i + 1]);
+        graph.addEdge(arr[i] + 1, arr[i + 2] + 1, arr[i + 1]);
     }
     var s = [];
     //不考虑起始点
-    for (i = 1; i <= len; i++) {
-        graph.set = new Set();
-        graph.marked = [];
+    for (i = 2; i <= len + 1; i++) {
+        graph.set.clear();
         graph.dfs(i);
-        console.log(graph.set)
+        graph.marked = [];
         if (graph.set.size == 1) { //如果一个节点只能到达本身，则是终止点
             s.push(i);
         }
     }
     for (i = 0; i < s.length; i++) {
-        document.getElementById("DFA-end").innerHTML += (s[i]) + ";";
+        document.getElementById("DFA-end").innerHTML += (s[i] - 1) + ";";
     }
+
 }
-
-/**
- * 求集合的交集
- */
-function intersectSet(set1, set2) {
-    var resultSet = new Set();
-    for (let set of set1) {
-        if (set2.has(set)) {
-            resultSet.add(set);
-        };
-    };
-    return resultSet;
-};
-
 /**
  * 判断数组是否包含
  */
-/* function isContained(aa, bb) {
+function isContained(aa, bb) {
     if (!(aa instanceof Array) || !(bb instanceof Array) || ((aa.length < bb.length))) {
         return false;
     }
@@ -699,36 +583,32 @@ function intersectSet(set1, set2) {
         }
     }
     return true;
-} */
+}
 
 /**
  * 新建一个Graph类
  */
 function Graph(v, e) {
     this.set = new Set(); //用来存储遍历的节点
-    this.stack = []; //用于存储路径
-    this.paths = []; //用于存储多条路径
     this.vertices = v;
     this.edges = e;
     this.adj = [];
-    this.marked = []; //标记节点是否被访问
     this.weight = [];
     this.edgeTo = [];
-    for (var i = 0; i <= this.vertices; ++i) { //初始化顶点的二维矩阵
+    for (var i = 1; i <= this.vertices; ++i) { //初始化顶点的二维矩阵
         this.adj[i] = [];
     }
 
-    for (var i = 0; i <= this.edges; ++i) { //初始化边的权值二维矩阵
+    for (var i = 1; i <= this.edges; ++i) { //初始化边的权值二维矩阵
         this.weight[i] = [];
     }
 
     this.addEdge = addEdge;
     this.dfs = dfs;
     this.bfs = bfs;
-    this.getAllRoute = getAllRoute;
     this.pathTo = pathTo;
     this.hasPathTo = hashPathTo;
-    this.getWeight = getWeight;
+    this.marked = [];
 }
 
 /**
@@ -752,11 +632,10 @@ function dfs(v) {
     for (var i = 0; i < this.adj[v].length; i++) {
         var w = this.adj[v][i];
         if (!this.marked[w]) {
-            this.dfs((Number)(w));
+            this.dfs(w);
         }
     }
 }
-
 
 /**
  * 邻接矩阵的BFS算法
@@ -768,10 +647,10 @@ function bfs(s) {
     while (queue.length > 0) {
         var v = queue.shift(); // 从队首移除
         if (typeof(v) != "undefined") {
-            this.set.add(v);
+            //alert("Visisted vertex: " + v);
         }
         for (var i = 0; i < this.adj[v].length; i++) {
-            var w = (Number)(this.adj[v][i]);
+            var w = this.adj[v][i];
             if (!this.marked[w]) {
                 this.edgeTo[w] = v;
                 this.marked[w] = true;
@@ -782,34 +661,10 @@ function bfs(s) {
 }
 
 /**
- * 获得任意两点之间的所有路径
- */
-function getAllRoute(start, end) {
-    this.marked[start] = true; //marked数组存储各定点的遍历情况，true为已遍历（标记）
-    this.stack.push(start); //入栈
-    for (var j = 1; j <= this.vertices; j++) {
-        if (start == end) { //找到终点
-            //注意这里不能直接使用this.stack，这样修改stack的值会导致paths的值同时改变
-            this.paths.push(this.stack.slice(0));
-            this.stack.pop(); //出栈
-            this.marked[start] = false;
-            break;
-        }
-        if (!this.marked[j] && this.weight[start][j]) { //该顶点未被访问过
-            this.getAllRoute(j, end);
-        }
-        if (j == this.vertices) { //如果该顶点无其它出度
-            this.stack.pop();
-            this.marked[start] = false;
-        }
-    }
-}
-
-/**
  * 获得最短路径
  */
 function pathTo(v, s) {
-    if (typeof(this.hasPathTo(v)) == "undefined") {
+    if (!this.hasPathTo(v)) {
         return undefined;
     }
     var path = [];
@@ -825,212 +680,36 @@ function hashPathTo(v) {
 }
 
 /**
- * 求路径之间的权值和
- */
-function getWeight(path) {
-    var i;
-    var weight = new Set();
-    for (i = path.length - 1; i > 0; i--) {
-        weight.add(this.weight[path[i]][path[i - 1]]);
-    }
-    return weight;
-}
-/**
  * 获得MFA
  */
 function MFA() {
-    var i;
+    var DFA = [];
     var MFA = [];
     var table = document.getElementById("DFA");
     var arr = table.getElementsByTagName("td");
     var DFAEnd = document.getElementById("DFA-end").innerHTML;
     var end = DFAEnd.split(";");
-    var len = 0;
-    var ek = new Set(); //初始终态集
-    var sk = new Set(); //初始非终态集
-    var k1 = new Set(); //终态集合的集合
-    var k2 = new Set(); //非终态集合的集合
-    var t = new Set();
-    var w = new Set(); //权值集合
-    var p = new Set(); //节点集合
     end.pop(); //去除末尾空串
 
-    for (i = 0; i < arr.length; i += 3) {
-        MFA.push((Number)(arr[i].innerText));
-        MFA.push((arr[i + 1].innerText));
-        MFA.push((Number)(arr[i + 2].innerText));
-    }
-
-    for (i = 0; i < arr.length; i += 3) {
-        var temp = (Number)(arr[i].innerText);
-        len = len > temp ? len : temp;
-        temp = (Number)(arr[i + 2].innerText);
-        len = len > temp ? len : temp;
-    }
-    //创建图实例
-    var graph = new Graph(len, arr.length / 3);
-    for (i = 0; i < arr.length; i += 3) {
-        if (arr[i + 1].innerText != '#') { //如果不是空加入队列
-            w.add(arr[i + 1].innerText);
-        }
-        p.add((Number)(arr[i].innerText));
-        p.add((Number)(arr[i + 2].innerText));
-        graph.addEdge(arr[i].innerText, arr[i + 2].innerText, arr[i + 1].innerText);
-    }
-    end = end.map(Number); //将字符串数组变为数字数组
-    k1 = k1.add(new Set(end));
-    ek = new Set(end);
-    //划分终态集和非终态集
-    for (let p1 of p) {
-        if (end.indexOf(p1) == -1) { //如果不是终态集，加入到k2数组
-            t.add(p1);
-        }
-    }
-    sk = t;
-    k2.add(t);
-    /*考虑非终态集k2是否可再分
-     *定义kk1,kk2数组用来划分k2终态集
-     */
-    for (var ww of w) {
-        for (let k of k2) { //对k2进行遍历,注意这里k2是集合的集合
-            //console.log(ww)
-            var kk1 = new Set();
-            var kk2 = new Set();
-            var kk3 = new Set();
-            if (k.size > 1) {
-                for (var kk of k) {
-                    var adj = graph.adj[kk].map(Number); //字符串数组转数字数组
-                    var flag = false; //判断节点是否已经加入集合
-                    for (i = 0; i < adj.length; i++) {
-                        if (graph.weight[kk][adj[i]] == ww && ek.has(adj[i])) { //如果该节点通过某接受符号到达了终态集，加入kk1集合
-                            kk1.add(kk);
-                            flag = true;
-                        } else if (graph.weight[kk][adj[i]] == ww && sk.has(adj[i])) { //如果该节点通过某接受符号到达了非终态集，加入kk2集合
-                            kk2.add(kk);
-                            flag = true;
-                        }
-                    }
-                    if (!flag) { //如果节点没有权为ww的边,直接加入kk3集合
-                        kk3.add(kk);
-                    }
-                }
-                if (kk1.size > 0 && kk2.size > 0) {
-                    k2.delete(k);
-                    k2.add(kk1);
-                    k2.add(kk2);
-                } else if (kk1.size > 0 && kk2.size == 0 && kk1.size < k.size) {
-                    k2.delete(k);
-                    k2.add(kk1);
-                    k2.add(kk3);
-                } else if (kk2.size > 0 && kk1.size == 0 && kk2.size < k.size) {
-                    k2.delete(k);
-                    k2.add(kk2);
-                    k2.add(kk3);
-                }
-            }
-        }
-    }
-    /*考虑非终态集k1是否可再分
-     *定义kk1,kk2数组用来划分k2终态集
-     */
-    for (var ww of w) {
-        for (var k of k1) { //对k2进行遍历,注意这里k2是集合的集合
-            var kk1 = new Set();
-            var kk2 = new Set();
-            var kk3 = new Set();
-            if (k.size > 1) {
-                for (var kk of k) {
-                    var adj = graph.adj[kk].map(Number); //字符串数组转数字数组
-                    var flag = false; //判断节点是否已经加入集合
-                    for (i = 0; i < adj.length; i++) {
-                        if (graph.weight[kk][adj[i]] == ww && ek.has(adj[i])) { //如果该节点通过某接受符号到达了终态集，加入kk1集合
-                            kk1.add(kk);
-                            flag = true;
-                        } else if (graph.weight[kk][adj[i]] == ww && sk.has(adj[i])) { //如果该节点通过某接受符号到达了非终态集，加入kk2集合
-                            kk2.add(kk);
-                            flag = true;
-                        }
-                    }
-                    if (!flag) { //如果节点没有权为ww的边,直接加入kk3集合
-                        kk3.add(kk);
-                    }
-                }
-                if (kk1.size > 0 && kk2.size > 0) {
-                    k1.delete(k);
-                    k1.add(kk1);
-                    k1.add(kk2);
-                } else if (kk1.size > 0 && kk2.size == 0 && kk1.size < k.size) {
-                    k1.delete(k);
-                    k1.add(kk1);
-                    k1.add(kk3);
-                } else if (kk2.size > 0 && kk1.size == 0 && kk2.size < k.size) {
-                    k1.delete(k);
-                    k1.add(kk2);
-                    k1.add(kk3);
-                }
-            }
-        }
-
-    }
-
-    console.log(k1);
-    console.log(k2);
-    for (var k of k1) { //对原来的节点进行合并
-        if (k.size > 1) {
-            for (var j = 0; j < MFA.length; j += 3) {
-                if (k.has(MFA[j])) {
-                    MFA[j] = [...k][0]; //使用集合第一个元素进行替换
-                }
-                if (k.has(MFA[j + 2])) {
-                    MFA[j + 2] = [...k][0]; //使用集合第一个元素进行替换
-                }
-            }
-        }
-    }
-
-    for (var k of k2) { //对原来的节点进行合并
-        if (k.size > 1) {
-            for (var j = 0; j < MFA.length; j += 3) {
-                if (k.has(MFA[j])) {
-                    MFA[j] = [...k][0]; //使用集合第一个元素进行替换
-                }
-                if (k.has(MFA[j + 2])) {
-                    MFA[j + 2] = [...k][0]; //使用集合第一个元素进行替换
-                }
-            }
-        }
-    }
-    console.log(MFA)
-    DuplRemove(MFA)
-    addTable(MFA, 3);
-    getMFAEnd(MFA, end);
-}
-
-/** 
- * MFA数组去重
- */
-function DuplRemove(arr) {
-    for (var i = 0; i < arr.length; i += 3) {
-        for (var j = i + 3; j < arr.length; j += 3) {
-            if (arr[i] == arr[j] && arr[i + 1] == arr[j + 1] && arr[i + 2] == arr[j + 2]) { //第一个等同于第二个，splice方法删除第二个
-                arr.splice(j, 3);
-                j -= 3;
-            }
-        }
-    }
-}
-
-/**
- * 获得MFA的终结状态集
- */
-function getMFAEnd(arr, end) {
-    document.getElementById("MFA-end").innerHTML = "";
     for (var i = 0; i < end.length; i++) {
-        if (arr.indexOf(end[i]) > -1) {
-            document.getElementById("MFA-end").innerHTML += end[i] + ";";
+        end[i] = (Number)(end[i]);
+    }
+    end.sort(sortNumber);
+    //console.log(end)
+    for (var i = 0; i < arr.length; i++) {
+        DFA.push(arr[i].innerText);
+    }
+
+    for (var i = 0; i < DFA.length; i++) {
+        if (end.indexOf((Number)(DFA[i + 2])) != -1) { //判断DFA的到达状态是否在end中
+            DFA[i + 2] = end[0];
         }
     }
+    MFA = DFA;
+    addTable(MFA, 3);
+    document.getElementById("MFA-end").innerHTML = end[0];
 }
+
 /**
  * 排序函数
  */
