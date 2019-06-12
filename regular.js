@@ -177,11 +177,12 @@ function isOperator(value) {
  */
 function getPrioraty(value) {
     switch (value) {
-        case '+':
         case '|':
             return 1;
-        case '*':
+        case '+':
             return 2;
+        case '*':
+            return 3;
         default:
             return 0;
     }
@@ -208,7 +209,7 @@ function dal2Rpn(exp) {
             inputStack.push(cur);
         }
     }
-    //console.log('step one');
+    console.log(exp)
     while (inputStack.length > 0) {
         var cur = inputStack.shift(); //当前的操作符
         if (isOperator(cur)) {
@@ -246,6 +247,7 @@ function dal2Rpn(exp) {
     }
     //console.log('step three');
     // console.log(outputQueue);
+    console.log(outputQueue)
     return outputQueue;
 
 }
@@ -280,8 +282,8 @@ function NFA() {
 
             } else if (isLetter(regular[i - 1]) && regular[i] == '(') {
                 //当出现字符连着左括号
-                exp.push(regular[i]);
                 exp.push('+');
+                exp.push(regular[i]);
 
             } else if (regular[i] == '*' && regular[i + 1] == '(') {
                 //当出现星号连着左括号
@@ -516,17 +518,24 @@ function DFA() {
         graph.addEdge(arr[i].innerText, arr[i + 2].innerText, arr[i + 1].innerText);
     }
 
+    var iSet; //权值的交集
     /*得到起始节点的经过#边能到达的点的集合 */
     graph.bfs(startPoint);
     var s0 = new Set();
     s0.add(startPoint); //加入起始节点
     for (let p1 of p) {
+        graph.marked = new Array();
+        graph.paths = [];
+        graph.stack = [];
         var ws = new Set("#");
-        var path = graph.pathTo(p1, startPoint); //获得路径
-        var weight = graph.getWeight(path); //获得路径的权值集合
-        iSet = intersectSet(weight, ws); //权值的交集
-        if (iSet.size == weight.size && iSet.size == ws.size) { //如果两个集合相等，加入节点
-            s0.add(p1);
+        graph.getAllRoute(startPoint, p1);
+        for (var jj = 0; jj < graph.paths.length; jj++) {
+            var path = graph.paths[jj]; //获得路径
+            var weight = graph.getWeight(path.reverse()); //获得路径的权值集合
+            iSet = intersectSet(weight, ws); //权值的交集
+            if (iSet.size == weight.size && iSet.size == ws.size) { //如果两个集合相等，加入节点
+                s0.add(p1);
+            }
         }
     }
     /*  graph.marked = new Array();
@@ -535,7 +544,7 @@ function DFA() {
      graph.getAllRoute(1, 1);
      console.log(graph.paths) */
     var s = new Set(); // 定义一个集合用来存储子集
-    var iSet; //权值的交集
+
     var sflag = [false]; //用来标记子集是否被标记
     var st; //记录s集合初始大小
     s.add(s0);
@@ -564,6 +573,7 @@ function DFA() {
                                 for (var jj = 0; jj < graph.paths.length; jj++) {
                                     var path = graph.paths[jj]; //获得路径
                                     var weight = graph.getWeight(path.reverse()); //获得路径的权值集合
+                                    weight.add("#");
                                     iSet = intersectSet(weight, ws); //权值的交集
                                     if (iSet.size == weight.size && iSet.size == ws.size) { //如果两个集合相等，加入节点
                                         s1.add(j);
@@ -1030,10 +1040,4 @@ function getMFAEnd(arr, end) {
             document.getElementById("MFA-end").innerHTML += end[i] + ";";
         }
     }
-}
-/**
- * 排序函数
- */
-function sortNumber(a, b) {
-    return a - b
 }
